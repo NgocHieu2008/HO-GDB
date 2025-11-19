@@ -86,3 +86,21 @@ def main() -> None:
     print("Family graph example executed successfully!")
 if __name__ == "__main__":
     main()
+
+
+# MATCH (n)
+# OPTIONAL MATCH (n)-[r]-()
+# RETURN n, r
+
+# // Tìm Hyperedge đại diện cho gia đình (Dựa trên cơ chế Lowering)
+# MATCH (family:Family {last_name: 'Smith', domicile: 'Texas'})
+
+# // Tìm các node thành viên (Person) được kết nối vào Hyperedge này
+# MATCH (family)<-[:_adjacency]-(person:Person)
+
+# RETURN 
+#     family.last_name AS FamilyName,
+#     family.domicile AS Address,
+#     collect(person.name) AS Members,
+#     avg(person.born) AS Average_Birth_Year
+
