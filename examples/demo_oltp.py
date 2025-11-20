@@ -4,12 +4,11 @@ import torch_geometric
 
 from HOGDB.db.neo4j import Neo4jDatabase
 
-# --- Cải tiến 1: Import rõ ràng các lớp cần thiết ---
 from HOGDB.graph.hypergraph_storage import HyperGraphStorage
 from HOGDB.graph.node import Node
 from HOGDB.graph.edge import Edge
 from HOGDB.graph.hyperedge import HyperEdge
-# Giả định các lớp này tồn tại dựa trên báo cáo
+
 from HOGDB.graph.path import Path
 from HOGDB.db.label import Label
 from HOGDB.db.property import Property
@@ -22,7 +21,7 @@ def main() -> None:
     gs.clear_graph()
 
     # =================================================================
-    print("\n--- PHẦN 1: THỰC THI OLTP (TÁC VỤ GIAO DỊCH) ---")
+    print("\n--- THỰC THI OLTP (TÁC VỤ GIAO DỊCH) ---")
     # =================================================================
     
     print("\n[OLTP] Bước 1.1: Tạo các Nodes")
@@ -52,7 +51,6 @@ def main() -> None:
     print("-> Đã thêm 4 cạnh (Builds, Owns, Married, AfraidOf).")
 
     print("\n[OLTP] Bước 1.3: Tạo HyperEdge (Bậc cao)...")
-    # Đây là ví dụ 'Family'
     family_hyperedge = HyperEdge(
         nodes=[richard, mary, bob],
         label=Label("Family"),
@@ -61,8 +59,8 @@ def main() -> None:
     gs.add_hyperedge(family_hyperedge) # API 'add_hyperedge' thực hiện 'Lowering'
     print("-> Đã thêm 1 siêu cạnh 'Family' (Richard, Mary, Bob).")
 
-    print("\n[OLTP] Bước 1.4: Đọc (READ) cấu trúc bậc cao...") # <-- Đổi số thứ tự
-    # Demo 'Lifting' (như trong báo cáo)
+    print("\n[OLTP] Bước 1.4: Đọc (READ) cấu trúc bậc cao...")
+    # 'Lifting' 
     family_pattern = HyperEdge(label=Label("Family"))
     
     # API 'get_hyperedge' thực hiện 'Lifting'
@@ -77,41 +75,33 @@ def main() -> None:
         print(f"   Nơi ở (ban đầu): {retrieved_family['domicile']}")
         print("   (Xác nhận các thành viên trong siêu cạnh là đúng)")
 
-    # --- BƯỚC MỚI: CẬP NHẬT (UPDATE) ---
     print("\n[OLTP] Bước 1.5: Cập nhật (UPDATE) HyperEdge...")
-    # Pattern để tìm 'Family' (có thể dùng lại family_pattern)
     update_pattern = HyperEdge(label=Label("Family"))
     
     # Thuộc tính mới: Cập nhật 'domicile', giữ 'last_name'
-    # Lưu ý: update_hyperedge sẽ THAY THẾ toàn bộ thuộc tính
     new_properties = [
         Property("domicile", str, "Nevada"), # Giá trị mới
         Property("last_name", str, "Smith") # Phải bao gồm tất cả thuộc tính muốn giữ
     ]
-    
-    # Gọi API 'update_hyperedge' từ hypergraph_storage.py
+
     gs.update_hyperedge(update_pattern, new_properties)
     print(f"-> Đã cập nhật 'domicile' của 'Family' thành 'Nevada'.")
-
-    # --- BƯỚC MỚI: ĐỌC LẠI ĐỂ XÁC MINH CẬP NHẬT ---
+    # Xác minh cập nhật
     print("\n[OLTP] Bước 1.6: Đọc lại (READ) để xác minh Cập nhật...")
     verified_family = gs.get_hyperedge(family_pattern)
     if verified_family:
-        verified_domicile = verified_family["domicile"] # Dùng __getitem__
+        verified_domicile = verified_family["domicile"] 
         print(f"   -> Đã xác minh 'domicile' (mới): {verified_domicile}")
         assert verified_domicile == "Nevada"
-        assert verified_family["last_name"] == "Smith" # Đảm bảo thuộc tính kia còn
+        assert verified_family["last_name"] == "Smith"
         print("   (Xác nhận Cập nhật thành công)")
     else:
         print("   (LỖI: Không tìm thấy Family sau khi cập nhật)")
 
-    # --- BƯỚC MỚI: XÓA (DELETE) ---
     print("\n[OLTP] Bước 1.7: Xóa (DELETE) HyperEdge...")
-    # Dùng lại family_pattern để tìm và xóa
     gs.delete_hyperedge(family_pattern)
     print("-> Đã xóa siêu cạnh 'Family'.")
     
-    # --- BƯỚC MỚI: ĐỌC LẠI ĐỂ XÁC MINH XÓA ---
     print("\n[OLTP] Bước 1.8: Đọc lại (READ) để xác minh Xóa...")
     deleted_family = gs.get_hyperedge(family_pattern)
     hyperedge_count = gs.get_hyperedge_count([Label("Family")])

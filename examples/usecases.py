@@ -1,13 +1,10 @@
 import sys
 from typing import List
 
-# ==========================================
-# 1. IMPORTS
-# ==========================================
 from HOGDB.graph.node import Node
 from HOGDB.graph.edge import Edge
 from HOGDB.graph.node_tuple import NodeTuple
-from HOGDB.graph.subgraph import Subgraph, SubgraphEdge # Import thêm SubgraphEdge
+from HOGDB.graph.subgraph import Subgraph, SubgraphEdge 
 from HOGDB.db.label import Label
 from HOGDB.db.property import Property
 from HOGDB.db.neo4j import Neo4jDatabase
@@ -78,7 +75,6 @@ def run_complex_incidents(db):
     )
 
     # --- BƯỚC 4: Tạo mối quan hệ giữa 2 Sự cố (SubgraphEdge) ---
-    # Bài báo đề cập: "subgraph is connected to other... similar incidents... via similarity edges"
     sim_link = SubgraphEdge(
         start_subgraph=incident_a,
         end_subgraph=incident_b,
@@ -150,11 +146,9 @@ def main():
         return
 
     print(">>> [SETUP] Clearing Graph...")
-    # Xóa sạch dữ liệu cũ
     temp = GraphwithSubgraphStorage(db)
     temp.clear_graph()
 
-    # Chạy 2 kịch bản phức tạp
     run_complex_incidents(db)
     run_complex_causality(db)
 

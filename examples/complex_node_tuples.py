@@ -11,10 +11,6 @@ from HOGDB.graph.graph_with_tuple_storage import *
 # --- Helpers ---------------------------------------------------------------
 
 def has_label_soft(nt, expected: str) -> bool:
-    """
-    Kiểm label 'mềm': thử nhiều thuộc tính (name/label/value), rồi fallback str().
-    Dùng khi bạn vẫn muốn kiểm tra label nhưng tránh phụ thuộc implementation.
-    """
     try:
         labels = getattr(nt, "labels", []) or []
         for l in labels:
@@ -53,14 +49,10 @@ def main() -> None:
     - 2 Team tuples    (TeamA = {Alice, Bob, Carol}, TeamB = {Dave, Erin})
     - 2 Project tuples (ProjX = {Alice, Dave}, ProjY = {Bob, Carol, Erin})
     - 1 Year tuple     (Y2024 = {Alice, Bob, Carol})
-
-    Kiểm tra theo NGỮ NGHĨA (thuộc tính khóa, bộ đếm) thay vì so sánh == giữa NodeTuple.
     """
     # 1) Khởi tạo
     db = Neo4jDatabase()
     gs = GraphwithTupleStorage(db)
-
-    # 2) Xoá sạch để có thể chạy lặp lại
     gs.clear_graph()
 
     # 3) Thêm node Person
@@ -137,7 +129,6 @@ def main() -> None:
     )
     assert retrieved_team_a is not None
     assert prop_dict(retrieved_team_a).get("id") == "teamA"
-    # (tùy chọn) assert has_label_soft(retrieved_team_a, "Team")
 
     # Project Y
     retrieved_proj_y = gs.get_node_tuple(
@@ -145,7 +136,6 @@ def main() -> None:
     )
     assert retrieved_proj_y is not None
     assert prop_dict(retrieved_proj_y).get("code") == "ProjY"
-    # (tùy chọn) assert has_label_soft(retrieved_proj_y, "Project")
 
     # Year 2024
     retrieved_year_2024 = gs.get_node_tuple(
@@ -153,7 +143,6 @@ def main() -> None:
     )
     assert retrieved_year_2024 is not None
     assert prop_dict(retrieved_year_2024).get("y") == 2024
-    # (tùy chọn) assert has_label_soft(retrieved_year_2024, "Year")
 
     # 6) Cập nhật một tuple: ProjX -> 2025 + thêm desc
     gs.update_node_tuple(
