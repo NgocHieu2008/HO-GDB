@@ -175,7 +175,6 @@ def main():
     except RuntimeError as e:
         print(e)
         return
-s
     print("\n>>> [STEP 3] Training & Comparing...")
     
     model_base = GNNModel(1, 16, 2)
